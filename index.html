@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Sheet — Shared Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300..700;1,300..700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #15130f;
+    --ink-soft: #201d17;
+    --ink-card: #241f18;
+    --paper: #f3eee4;
+    --paper-dim: #cfc7b6;
+    --muted: #9c9484;
+    --amber: #d98f2b;
+    --amber-dim: #8c5d1e;
+    --amber-bright: #f0ab52;
+    --danger: #c1553b;
+    --radius: 4px;
+    --serif: 'Fraunces', serif;
+    --sans: 'Work Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  a { color: inherit; }
+
+  button {
+    font-family: var(--sans);
+    cursor: pointer;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--amber-bright);
+    outline-offset: 2px;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 40px 0 22px;
+    flex-wrap: wrap;
+  }
+
+  .wordmark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(28px, 4vw, 40px);
+    letter-spacing: 0.2px;
+    margin: 0;
+  }
+
+  .tagline {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin: 8px 0 0;
+    max-width: 44ch;
+    line-height: 1.5;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .count {
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--amber);
+    color: #1a1305;
+    border: none;
+    border-radius: var(--radius);
+    padding: 11px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.15s ease;
+  }
+
+  .btn-primary:hover { background: var(--amber-bright); }
+
+  .btn-primary:disabled {
+    background: var(--amber-dim);
+    color: #2a2313;
+    cursor: not-allowed;
+  }
+
+  .sprockets {
+    height: 13px;
+    background-image: radial-gradient(circle, var(--amber-dim) 2px, transparent 2.6px);
+    background-size: 22px 13px;
+    background-position: 11px center;
+    opacity: 0.55;
+    margin-bottom: 30px;
+  }
+
+  #status-line {
+    font-size: 13px;
+    color: var(--amber-bright);
+    min-height: 18px;
+    margin: -14px 0 20px;
+  }
+
+  #banner {
+    display: none;
+    background: rgba(193, 85, 59, 0.14);
+    border: 1px solid rgba(193, 85, 59, 0.4);
+    color: #e8a58f;
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 13.5px;
+    margin-bottom: 22px;
+  }
+
+  .grid {
+    column-count: 4;
+    column-gap: 14px;
+  }
+
+  @media (max-width: 980px) { .grid { column-count: 3; } }
+  @media (max-width: 700px) { .grid { column-count: 2; } }
+  @media (max-width: 440px) { .grid { column-count: 1; } }
+
+  .card {
+    break-inside: avoid;
+    margin-bottom: 14px;
+    background: var(--ink-card);
+    border: 1px solid rgba(217, 143, 43, 0.14);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .card img {
+    width: 100%;
+    display: block;
+    cursor: zoom-in;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    border-top: 1px solid rgba(217, 143, 43, 0.1);
+  }
+
+  .card-name {
+    font-size: 12px;
+    color: var(--paper-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 4px;
+    line-height: 0;
+    border-radius: 3px;
+    flex-shrink: 0;
+    transition: color 0.15s ease;
+  }
+
+  .icon-btn:hover { color: var(--amber-bright); }
+
+  .empty {
+    text-align: center;
+    padding: 90px 20px;
+    color: var(--muted);
+  }
+
+  .empty-frame {
+    width: 68px;
+    height: 50px;
+    margin: 0 auto 18px;
+    border: 1.5px dashed var(--amber-dim);
+    border-radius: 3px;
+  }
+
+  .empty p {
+    font-size: 14.5px;
+    margin: 0;
+  }
+
+  .dropzone-active::after {
+    content: "Drop photos to add them";
+    position: fixed;
+    inset: 0;
+    background: rgba(21, 19, 15, 0.88);
+    color: var(--amber-bright);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    pointer-events: none;
+    border: 2px dashed var(--amber);
+    margin: 14px;
+  }
+
+  /* Lightbox */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 9, 7, 0.94);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 26px;
+  }
+
+  .lightbox.open { display: flex; }
+
+  .lightbox-inner {
+    max-width: 920px;
+    width: 100%;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .lightbox-inner img {
+    max-width: 100%;
+    max-height: 68vh;
+    object-fit: contain;
+    margin: 0 auto;
+    border-radius: 3px;
+    display: block;
+  }
+
+  .lightbox-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .lightbox-meta .info {
+    min-width: 0;
+  }
+
+  .lightbox-meta .name {
+    font-size: 15px;
+    color: var(--paper);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 50vw;
+  }
+
+  .lightbox-meta .sub {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .lightbox-controls {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(217, 143, 43, 0.4);
+    color: var(--paper);
+    border-radius: var(--radius);
+    padding: 9px 16px;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .btn-ghost:hover { border-color: var(--amber-bright); color: var(--amber-bright); }
+
+  .btn-danger-ghost {
+    background: transparent;
+    border: 1px solid rgba(193, 85, 59, 0.4);
+    color: #e8a58f;
+    border-radius: var(--radius);
+    padding: 9px 14px;
+    font-size: 13.5px;
+  }
+
+  .btn-danger-ghost:hover { border-color: var(--danger); }
+
+  .lightbox-close {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    background: transparent;
+    border: none;
+    color: var(--paper-dim);
+    font-size: 26px;
+    line-height: 1;
+    padding: 6px;
+  }
+
+  .lightbox-close:hover { color: var(--paper); }
+
+  #file-input { display: none; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="top">
+    <div>
+      <h1 class="wordmark">Contact Sheet</h1>
+      <p class="tagline">A shared gallery — anyone with this link can view, add, and download photos.</p>
+    </div>
+    <div class="actions">
+      <span class="count" id="count-label">Loading…</span>
+      <button class="btn-primary" id="upload-btn">Add photos</button>
+      <input type="file" id="file-input" accept="image/*" multiple>
+    </div>
+  </header>
+  <div class="sprockets"></div>
+
+  <div id="banner"></div>
+  <div id="status-line"></div>
+
+  <div id="grid" class="grid"></div>
+  <div id="empty-state" class="empty" style="display:none;">
+    <div class="empty-frame"></div>
+    <p>No exposures yet — add the first photo.</p>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
+  <div class="lightbox-inner">
+    <img id="lightbox-img" src="" alt="">
+    <div class="lightbox-meta">
+      <div class="info">
+        <div class="name" id="lightbox-name"></div>
+        <div class="sub" id="lightbox-sub"></div>
+      </div>
+      <div class="lightbox-controls">
+        <button class="btn-danger-ghost" id="lightbox-delete">Delete</button>
+        <a class="btn-ghost" id="lightbox-download" download>Download</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const grid = document.getElementById('grid');
+  const emptyState = document.getElementById('empty-state');
+  const countLabel = document.getElementById('count-label');
+  const statusLine = document.getElementById('status-line');
+  const banner = document.getElementById('banner');
+  const uploadBtn = document.getElementById('upload-btn');
+  const fileInput = document.getElementById('file-input');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxName = document.getElementById('lightbox-name');
+  const lightboxSub = document.getElementById('lightbox-sub');
+  const lightboxDownload = document.getElementById('lightbox-download');
+  const lightboxDelete = document.getElementById('lightbox-delete');
+  const lightboxClose = document.getElementById('lightbox-close');
+
+  let photos = []; // { key, name, dataUrl, size, width, height, uploadedAt }
+  let currentKey = null;
+
+  function showBanner(msg) {
+    banner.textContent = msg;
+    banner.style.display = 'block';
+  }
+  function clearBanner() {
+    banner.style.display = 'none';
+    banner.textContent = '';
+  }
+  function setStatus(msg) {
+    statusLine.textContent = msg || '';
+  }
+  function formatBytes(bytes) {
+    if (!bytes) return '';
+    const units = ['B', 'KB', 'MB'];
+    let i = 0;
+    let val = bytes;
+    while (val >= 1024 && i < units.length - 1) { val /= 1024; i++; }
+    return val.toFixed(val < 10 && i > 0 ? 1 : 0) + ' ' + units[i];
+  }
+  function formatDate(iso) {
+    try {
+      return new Date(iso).toLocaleString(undefined, {
+        month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+      });
+    } catch (e) { return ''; }
+  }
+
+  function updateCount() {
+    countLabel.textContent = photos.length === 1 ? '1 exposure' : photos.length + ' exposures';
+  }
+
+  function render() {
+    grid.innerHTML = '';
+    updateCount();
+    if (photos.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+    const sorted = [...photos].sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+    for (const p of sorted) {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const img = document.createElement('img');
+      img.src = p.dataUrl;
+      img.alt = p.name;
+      img.loading = 'lazy';
+      img.addEventListener('click', () => openLightbox(p.key));
+      card.appendChild(img);
+
+      const footer = document.createElement('div');
+      footer.className = 'card-footer';
+
+      const name = document.createElement('span');
+      name.className = 'card-name';
+      name.textContent = p.name;
+      footer.appendChild(name);
+
+      const dl = document.createElement('button');
+      dl.className = 'icon-btn';
+      dl.setAttribute('aria-label', 'Download ' + p.name);
+      dl.innerHTML = downloadIconSvg();
+      dl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        triggerDownload(p);
+      });
+      footer.appendChild(dl);
+
+      card.appendChild(footer);
+      grid.appendChild(card);
+    }
+  }
+
+  function downloadIconSvg() {
+    return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>';
+  }
+
+  function triggerDownload(p) {
+    const a = document.createElement('a');
+    a.href = p.dataUrl;
+    a.download = p.name || 'photo.jpg';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function openLightbox(key) {
+    const p = photos.find(x => x.key === key);
+    if (!p) return;
+    currentKey = key;
+    lightboxImg.src = p.dataUrl;
+    lightboxImg.alt = p.name;
+    lightboxName.textContent = p.name;
+    lightboxSub.textContent = [formatDate(p.uploadedAt), formatBytes(p.size)].filter(Boolean).join(' · ');
+    lightboxDownload.href = p.dataUrl;
+    lightboxDownload.download = p.name || 'photo.jpg';
+    lightbox.classList.add('open');
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    currentKey = null;
+  }
+
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox(); });
+
+  lightboxDelete.addEventListener('click', async () => {
+    if (!currentKey) return;
+    const p = photos.find(x => x.key === currentKey);
+    if (!p) return;
+    if (!confirm('Delete "' + p.name + '"? This removes it for everyone viewing this gallery.')) return;
+    try {
+      await window.storage.delete(currentKey, true);
+      photos = photos.filter(x => x.key !== currentKey);
+      closeLightbox();
+      render();
+    } catch (err) {
+      showBanner('Could not delete this photo. Please try again.');
+    }
+  });
+
+  async function loadGallery() {
+    setStatus('Developing your photos…');
+    try {
+      const list = await window.storage.list('photo:', true);
+      const keys = (list && list.keys) ? list.keys : [];
+      const results = await Promise.all(keys.map(async (k) => {
+        try {
+          const res = await window.storage.get(k, true);
+          if (!res || !res.value) return null;
+          const data = JSON.parse(res.value);
+          return { key: k, ...data };
+        } catch (e) {
+          return null;
+        }
+      }));
+      photos = results.filter(Boolean);
+      clearBanner();
+    } catch (err) {
+      showBanner('Could not load the gallery. Check your connection and reload the page.');
+      photos = [];
+    }
+    setStatus('');
+    render();
+  }
+
+  function compressImage(file) {
+    const maxDim = 1800;
+    const maxBytesForDataUrl = 4.3 * 1024 * 1024;
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) { height = Math.round(height * maxDim / width); width = maxDim; }
+            else { width = Math.round(width * maxDim / height); height = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          let quality = 0.85;
+          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+          while (dataUrl.length > maxBytesForDataUrl && quality > 0.35) {
+            quality -= 0.1;
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+          resolve({ dataUrl, width, height });
+        };
+        img.onerror = () => reject(new Error('Could not read image'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('Could not read file'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleFiles(fileList) {
+    const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+    if (files.length === 0) return;
+    uploadBtn.disabled = true;
+    clearBanner();
+    let done = 0;
+    for (const file of files) {
+      done++;
+      setStatus('Developing ' + done + ' of ' + files.length + '…');
+      try {
+        const { dataUrl, width, height } = await compressImage(file);
+        if (dataUrl.length > 4.9 * 1024 * 1024) {
+          showBanner('"' + file.name + '" is too large even after compression and was skipped.');
+          continue;
+        }
+        const key = 'photo:' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+        const payload = {
+          name: file.name,
+          size: dataUrl.length,
+          width, height,
+          uploadedAt: new Date().toISOString()
+        };
+        await window.storage.set(key, JSON.stringify({ ...payload, dataUrl }), true);
+        photos.push({ key, ...payload, dataUrl });
+        render();
+      } catch (err) {
+        showBanner('Something went wrong uploading "' + file.name + '". Please try again.');
+      }
+    }
+    setStatus('');
+    uploadBtn.disabled = false;
+  }
+
+  uploadBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+    fileInput.value = '';
+  });
+
+  // Drag and drop
+  let dragCounter = 0;
+  document.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    dragCounter++;
+    document.body.classList.add('dropzone-active');
+  });
+  document.addEventListener('dragover', (e) => e.preventDefault());
+  document.addEventListener('dragleave', (e) => {
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      document.body.classList.remove('dropzone-active');
+    }
+  });
+  document.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dragCounter = 0;
+    document.body.classList.remove('dropzone-active');
+    if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+  });
+
+  loadGallery();
+})();
+</script>
+</body>
+</html>
